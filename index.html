@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Vaterpolo trener</title>
+<meta name="theme-color" content="#0b2e4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vaterpolo">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <h1 id="naslov">Igrači</h1>
+</header>
+
+<main>
+  <!-- IGRAČI -->
+  <section id="igraci" class="ekran aktivan">
+    <button class="dugme glavno siroko" id="dodajIgraca">+ Dodaj igrača</button>
+    <ul id="listaIgraca" class="lista"></ul>
+    <p class="prazno" id="nemaIgraca">Još nema igrača. Dodaj prvog.</p>
+  </section>
+
+  <!-- TRENING -->
+  <section id="trening" class="ekran">
+    <div class="red-datum">
+      <button class="dugme malo" id="danNazad" aria-label="Prethodni dan">‹</button>
+      <input type="date" id="datumTreninga">
+      <button class="dugme malo" id="danNapred" aria-label="Sledeći dan">›</button>
+    </div>
+    <p class="info" id="treningInfo"></p>
+    <ul id="listaPrisutnih" class="lista cekiranje"></ul>
+    <p class="prazno" id="nemaZaTrening">Prvo dodaj igrače na kartici „Igrači“.</p>
+    <div class="red-dugmad" id="treningDugmad">
+      <button class="dugme" id="sviPrisutni">Svi su tu</button>
+      <button class="dugme opasno" id="obrisiTrening">Obriši trening</button>
+    </div>
+  </section>
+
+  <!-- DOLASCI -->
+  <section id="dolasci" class="ekran">
+    <div class="filter">
+      <label>Period
+        <select id="period">
+          <option value="30">Poslednjih 30 dana</option>
+          <option value="90">Poslednja 3 meseca</option>
+          <option value="sezona" selected>Ova sezona (od 1. septembra)</option>
+          <option value="sve">Sve</option>
+        </select>
+      </label>
+    </div>
+    <p class="info" id="dolasciInfo"></p>
+    <ul id="listaDolazaka" class="lista"></ul>
+    <h2 class="podnaslov">Treninzi</h2>
+    <ul id="listaTreninga" class="lista"></ul>
+  </section>
+
+  <!-- PODEŠAVANJA -->
+  <section id="kopija" class="ekran">
+    <div class="kartica">
+      <h2>Rezervna kopija</h2>
+      <p>Svi podaci su samo u ovom telefonu. Napravi kopiju posle svakog većeg unosa i sačuvaj je u iCloud Drive ili pošalji sebi mejlom.</p>
+      <p class="info" id="poslednjaKopija"></p>
+      <button class="dugme glavno siroko" id="izvoz">Napravi rezervnu kopiju</button>
+    </div>
+    <div class="kartica">
+      <h2>Vrati iz kopije</h2>
+      <p>Učitava fajl kopije i <strong>zamenjuje</strong> sve trenutne podatke.</p>
+      <label class="dugme siroko" for="uvozFajl">Izaberi fajl kopije</label>
+      <input type="file" id="uvozFajl" accept=".json,application/json" hidden>
+    </div>
+    <div class="kartica">
+      <h2>O aplikaciji</h2>
+      <p class="info" id="statistika"></p>
+      <p class="info">Verzija 1.0 · radi bez interneta</p>
+    </div>
+  </section>
+</main>
+
+<nav class="dole">
+  <button data-ekran="igraci" class="aktivan"><span>👥</span>Igrači</button>
+  <button data-ekran="trening"><span>✅</span>Trening</button>
+  <button data-ekran="dolasci"><span>📊</span>Dolasci</button>
+  <button data-ekran="kopija"><span>💾</span>Kopija</button>
+</nav>
+
+<!-- Forma za igrača -->
+<dialog id="dlgIgrac">
+  <form method="dialog" id="formaIgrac">
+    <h2 id="dlgNaslov">Novi igrač</h2>
+    <label>Ime i prezime
+      <input name="ime" required autocomplete="off">
+    </label>
+    <div class="dva">
+      <label>Godište
+        <input name="godiste" type="number" inputmode="numeric" min="1950" max="2030">
+      </label>
+      <label>Kapa (broj)
+        <input name="kapa" type="number" inputmode="numeric" min="1" max="99">
+      </label>
+    </div>
+    <label>Pozicija
+      <select name="pozicija">
+        <option value="">—</option>
+        <option>Golman</option>
+        <option>Centar</option>
+        <option>Bek</option>
+        <option>Krilo</option>
+        <option>Spoljni</option>
+      </select>
+    </label>
+    <label>Telefon (igrač ili roditelj)
+      <input name="telefon" type="tel" autocomplete="off">
+    </label>
+    <label>Napomena
+      <input name="napomena" autocomplete="off">
+    </label>
+    <div class="red-dugmad">
+      <button type="button" class="dugme opasno" id="obrisiIgraca">Obriši</button>
+      <span class="razmak"></span>
+      <button type="button" class="dugme" id="odustani">Odustani</button>
+      <button type="submit" class="dugme glavno">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="poruka" class="poruka" role="status"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
