@@ -163,3 +163,163 @@ dialog h2 { margin: 0 0 14px; }
   max-width: 90vw; text-align: center;
 }
 .poruka.vidljiva { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* =================== v2 =================== */
+.top { display: flex; align-items: center; gap: 6px; }
+.top h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nazad {
+  border: 0; background: none; color: #fff; font-size: 34px; line-height: 1;
+  padding: 0 10px 4px 0; margin-left: -4px; cursor: pointer;
+}
+nav.dole button { font-size: 11px; }
+.centar { text-align: center; }
+.dug { color: var(--crvena) !important; }
+.bledo { opacity: .55; }
+.lista.mala li { min-height: 52px; padding: 8px 12px; }
+.lista.mala .kapa { width: 34px; height: 34px; font-size: 14px; }
+
+/* Meni "Više" */
+.meni li { cursor: pointer; }
+.meni .ikona { font-size: 26px; width: 40px; text-align: center; flex: none; }
+
+/* Lista utakmica */
+#listaUtakmica li { cursor: pointer; }
+.skor { font-size: 22px; font-weight: 800; min-width: 64px; text-align: right; }
+.skor.pobeda { color: var(--zelena); }
+.skor.poraz { color: var(--crvena); }
+
+/* Semafor */
+.semafor {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px;
+  background: var(--plava); color: #fff; border-radius: 16px; padding: 12px;
+}
+.tim { text-align: center; min-width: 0; }
+.tim-ime { font-size: 14px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rezultat { font-size: 48px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.sredina { text-align: center; }
+.periodi { display: flex; gap: 4px; }
+.periodi button {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(255,255,255,.35);
+  background: transparent; color: #fff; font: inherit; font-weight: 700; font-size: 15px;
+}
+.periodi button.aktivan { background: var(--akcent); border-color: var(--akcent); color: var(--plava); }
+.period-tekst { font-size: 11px; opacity: .7; margin-top: 4px; }
+
+.dva-dugmeta { display: grid; grid-template-columns: 1fr 1fr; }
+.dugme.opasno-pun { background: var(--crvena); border-color: var(--crvena); color: #fff; }
+.red-golman { margin: 12px 0 0; }
+
+/* Pločice igrača */
+.mreza { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.plocica {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 4px 8px; border-radius: 14px; border: 2px solid transparent;
+  background: var(--kartica); color: var(--tekst); box-shadow: var(--senka);
+  font: inherit; cursor: pointer; min-width: 0;
+}
+.plocica:active { transform: scale(.96); }
+.plocica.u-golu { border-color: var(--crvena); }
+.plocica.van { opacity: .45; background: repeating-linear-gradient(45deg, var(--kartica), var(--kartica) 6px, var(--linija) 6px, var(--linija) 12px); }
+.pl-kapa {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--plava); color: #fff; font-weight: 800; font-size: 20px;
+}
+.pl-kapa.golman { background: var(--crvena); }
+.pl-ime { font-weight: 600; font-size: 14px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-stat { font-size: 13px; color: var(--slabo); }
+.plocica.van .pl-stat { color: var(--crvena); font-weight: 700; }
+.faulovi { display: flex; gap: 4px; margin-top: 2px; }
+.faulovi i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid var(--slabo); }
+.faulovi i.pun { background: var(--crvena); border-color: var(--crvena); }
+
+/* Tok utakmice */
+.tok { list-style: none; margin: 8px 0 0; padding: 0; }
+.tok li {
+  display: flex; align-items: center; gap: 8px; padding: 8px 4px 8px 10px;
+  border-bottom: 1px solid var(--linija); font-size: 15px;
+}
+.tok li.nas-gol { background: rgba(31,157,85,.08); }
+.tok li.njihov { background: rgba(200,55,45,.08); }
+.tok-period { font-size: 12px; font-weight: 700; color: var(--slabo); width: 22px; }
+.tok-tekst { flex: 1; min-width: 0; }
+.tok-brisi {
+  border: 0; background: none; color: var(--slabo); font-size: 22px; width: 36px; height: 36px; cursor: pointer;
+}
+.tok-prazno { color: var(--slabo); justify-content: center; }
+
+/* Dijalog akcija (list odozdo) */
+dialog.list-dno { margin: auto auto 0; width: 100%; max-width: 560px; border-radius: 18px 18px 0 0; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+dialog.list-dno h2 { margin-bottom: 2px; }
+dialog.list-dno .info { margin: 0 0 12px; }
+.akcije { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.akcije .dugme { min-height: 56px; padding: 0 8px; font-size: 16px; }
+.akcije .dugme.glavno { grid-column: 1 / -1; min-height: 64px; font-size: 19px; }
+
+/* Zapisnik */
+dialog#dlgZapisnik { width: min(96vw, 600px); }
+.tabela-omot { overflow-x: auto; margin: 8px 0; }
+.zapisnik table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+.zapisnik th, .zapisnik td { padding: 6px 4px; text-align: center; border-bottom: 1px solid var(--linija); }
+.zapisnik th { color: var(--slabo); font-weight: 600; }
+.zapisnik .levo { text-align: left; }
+.zapisnik tr.van td { color: var(--crvena); }
+.zapisnik .nula { color: var(--linija); }
+.zapisnik h3 { margin: 16px 0 0; font-size: 15px; }
+
+/* Sastav u formi utakmice */
+.sastav-zaglavlje { display: flex; justify-content: space-between; font-size: 14px; color: var(--slabo); }
+#sastavLista { max-height: 40vh; overflow-y: auto; margin-top: 6px; }
+dialog { max-height: 92vh; overflow-y: auto; }
+
+/* Raspored */
+.raspored-lista li[data-id] { cursor: pointer; }
+.raspored-lista li.danas { outline: 2px solid var(--akcent); }
+.mesec-naslov {
+  background: none !important; box-shadow: none !important; min-height: 0 !important;
+  padding: 14px 4px 4px !important; font-weight: 700; color: var(--slabo); text-transform: capitalize;
+}
+.datum-znak {
+  flex: none; width: 52px; border-radius: 10px; padding: 4px 0; text-align: center; color: #fff;
+  display: flex; flex-direction: column; line-height: 1.1;
+}
+.dz-dan, .dz-mesec { font-size: 11px; text-transform: uppercase; opacity: .9; }
+.dz-broj { font-size: 22px; font-weight: 800; }
+.tip-trening { background: var(--plava); }
+.tip-utakmica { background: var(--crvena); }
+.tip-turnir { background: #b8860b; }
+.tip-ostalo { background: #6b7d8f; }
+.znacka { background: var(--akcent); color: var(--plava); font-size: 11px; padding: 1px 6px; border-radius: 6px; vertical-align: middle; }
+.proslo { margin-top: 20px; }
+.proslo summary { color: var(--slabo); font-weight: 600; padding: 8px 0; cursor: pointer; }
+.cek-red { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--tekst); }
+.cek-red input[type=checkbox] { width: 24px; height: 24px; min-height: 0; margin: 0; }
+.cek-red input[type=date] { flex: 1 1 100%; }
+
+/* Taktika */
+.taktika-alati { display: flex; gap: 8px; margin-bottom: 10px; }
+.taktika-alati select { flex: 1; min-width: 0; }
+.dugme.ukljuceno { background: var(--akcent); border-color: var(--akcent); }
+#bazen {
+  display: block; width: 100%; max-height: 68vh; touch-action: none; user-select: none;
+  -webkit-user-select: none; border-radius: 10px;
+}
+#bazen .token { cursor: grab; }
+#bazen .token.vuce circle { stroke: var(--akcent); stroke-width: 3; }
+
+/* Testovi */
+#listaTestova li[data-id] { cursor: pointer; }
+.vrednost { text-align: right; display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; }
+.vrednost b { font-size: 18px; }
+.promena { font-size: 13px; color: var(--slabo); }
+.promena.bolje { color: var(--zelena); font-weight: 700; }
+.promena.losije { color: var(--crvena); font-weight: 700; }
+.test-unos { margin-top: 8px; }
+.test-red { display: flex; align-items: center; gap: 10px; color: var(--tekst); font-size: 16px; margin-bottom: 8px; }
+.test-red .kapa { width: 34px; height: 34px; font-size: 14px; }
+.test-red span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.test-red input { width: 110px; flex: none; margin: 0; text-align: right; }
+input.pogresno { border-color: var(--crvena); background: rgba(200,55,45,.08); }
+
+/* Članarine */
+.mesec { flex: 1; display: grid; place-items: center; font-weight: 700; font-size: 19px; text-transform: capitalize; }
+.iznos-red { margin-top: 12px; }

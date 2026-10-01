@@ -16,18 +16,19 @@
 </head>
 <body>
 <header class="top">
+  <button id="nazad" class="nazad" hidden aria-label="Nazad">‹</button>
   <h1 id="naslov">Igrači</h1>
 </header>
 
 <main>
-  <!-- IGRAČI -->
+  <!-- ================= IGRAČI ================= -->
   <section id="igraci" class="ekran aktivan">
     <button class="dugme glavno siroko" id="dodajIgraca">+ Dodaj igrača</button>
     <ul id="listaIgraca" class="lista"></ul>
     <p class="prazno" id="nemaIgraca">Još nema igrača. Dodaj prvog.</p>
   </section>
 
-  <!-- TRENING -->
+  <!-- ================= TRENING ================= -->
   <section id="trening" class="ekran">
     <div class="red-datum">
       <button class="dugme malo" id="danNazad" aria-label="Prethodni dan">‹</button>
@@ -43,25 +44,123 @@
     </div>
   </section>
 
-  <!-- DOLASCI -->
-  <section id="dolasci" class="ekran">
-    <div class="filter">
-      <label>Period
-        <select id="period">
-          <option value="30">Poslednjih 30 dana</option>
-          <option value="90">Poslednja 3 meseca</option>
-          <option value="sezona" selected>Ova sezona (od 1. septembra)</option>
-          <option value="sve">Sve</option>
-        </select>
-      </label>
+  <!-- ================= UTAKMICE (lista) ================= -->
+  <section id="utakmice" class="ekran">
+    <button class="dugme glavno siroko" id="novaUtakmica">+ Nova utakmica</button>
+    <ul id="listaUtakmica" class="lista"></ul>
+    <p class="prazno" id="nemaUtakmica">Još nema utakmica.</p>
+  </section>
+
+  <!-- ================= UTAKMICA (uživo) ================= -->
+  <section id="utakmica" class="ekran">
+    <div class="semafor">
+      <div class="tim"><div class="tim-ime">Mi</div><div class="rezultat" id="golMi">0</div></div>
+      <div class="sredina">
+        <div class="periodi" id="periodi">
+          <button data-p="1">1</button><button data-p="2">2</button><button data-p="3">3</button><button data-p="4">4</button><button data-p="5">P</button>
+        </div>
+        <div class="period-tekst">četvrtina</div>
+      </div>
+      <div class="tim"><div class="tim-ime" id="imeProtivnika">Protivnik</div><div class="rezultat" id="golOni">0</div></div>
     </div>
+
+    <div class="red-dugmad dva-dugmeta">
+      <button class="dugme opasno-pun" id="golProtivnika">+ Gol protivnika</button>
+      <button class="dugme" id="ponisti">↶ Poništi poslednje</button>
+    </div>
+
+    <label id="redGolman" class="red-golman">U golu
+      <select id="golmanUGolu"></select>
+    </label>
+
+    <div id="mrezaIgraca" class="mreza"></div>
+
+    <div class="red-dugmad">
+      <button class="dugme glavno" id="otvoriZapisnik">📋 Zapisnik</button>
+      <button class="dugme" id="izmeniUtakmicu">Izmeni</button>
+      <span class="razmak"></span>
+      <button class="dugme opasno" id="obrisiUtakmicu">Obriši</button>
+    </div>
+
+    <h2 class="podnaslov">Tok utakmice</h2>
+    <ul id="tokUtakmice" class="tok"></ul>
+  </section>
+
+  <!-- ================= RASPORED ================= -->
+  <section id="raspored" class="ekran">
+    <button class="dugme glavno siroko" id="noviDogadjaj">+ Dodaj u raspored</button>
+    <div id="rasporedSadrzaj"></div>
+    <p class="prazno" id="nemaDogadjaja">Raspored je prazan.</p>
+  </section>
+
+  <!-- ================= VIŠE ================= -->
+  <section id="vise" class="ekran">
+    <ul class="lista meni">
+      <li data-idi="dolasci"><span class="ikona">📊</span><div class="detalji"><div class="ime">Dolasci na trening</div><div class="opis">Procenat dolazaka po igraču</div></div><div class="desno">›</div></li>
+      <li data-idi="taktika"><span class="ikona">🎯</span><div class="detalji"><div class="ime">Tabla za taktiku</div><div class="opis">Postavke i crtanje po bazenu</div></div><div class="desno">›</div></li>
+      <li data-idi="testovi"><span class="ikona">⏱️</span><div class="detalji"><div class="ime">Testovi i napredak</div><div class="opis">Plivanje, visina, težina</div></div><div class="desno">›</div></li>
+      <li data-idi="clanarine"><span class="ikona">💶</span><div class="detalji"><div class="ime">Članarine</div><div class="opis">Ko je platio koji mesec</div></div><div class="desno">›</div></li>
+      <li data-idi="kopija"><span class="ikona">💾</span><div class="detalji"><div class="ime">Rezervna kopija</div><div class="opis" id="viseKopijaOpis">Sačuvaj podatke van telefona</div></div><div class="desno">›</div></li>
+    </ul>
+  </section>
+
+  <!-- ================= DOLASCI ================= -->
+  <section id="dolasci" class="ekran">
+    <label>Period
+      <select id="period">
+        <option value="30">Poslednjih 30 dana</option>
+        <option value="90">Poslednja 3 meseca</option>
+        <option value="sezona" selected>Ova sezona (od 1. septembra)</option>
+        <option value="sve">Sve</option>
+      </select>
+    </label>
     <p class="info" id="dolasciInfo"></p>
     <ul id="listaDolazaka" class="lista"></ul>
     <h2 class="podnaslov">Treninzi</h2>
     <ul id="listaTreninga" class="lista"></ul>
   </section>
 
-  <!-- PODEŠAVANJA -->
+  <!-- ================= TAKTIKA ================= -->
+  <section id="taktika" class="ekran ekran-taktika">
+    <div class="taktika-alati">
+      <select id="izborPostavke"></select>
+      <button class="dugme malo" id="crtajDugme" title="Crtanje">✏️</button>
+      <button class="dugme malo" id="brisiCrtez" title="Obriši crtež">🧽</button>
+    </div>
+    <svg id="bazen" viewBox="0 0 200 320" xmlns="http://www.w3.org/2000/svg"></svg>
+    <p class="info centar" id="taktikaUputstvo">Prevuci kape prstom. ✏️ uključuje crtanje.</p>
+    <div class="red-dugmad">
+      <button class="dugme glavno" id="sacuvajPostavku">Sačuvaj postavku</button>
+      <span class="razmak"></span>
+      <button class="dugme opasno" id="obrisiPostavku">Obriši</button>
+    </div>
+  </section>
+
+  <!-- ================= TESTOVI ================= -->
+  <section id="testovi" class="ekran">
+    <label>Test
+      <select id="vrstaTesta"></select>
+    </label>
+    <button class="dugme glavno siroko" id="unesiTest">+ Unesi rezultate</button>
+    <p class="info" id="testInfo"></p>
+    <ul id="listaTestova" class="lista"></ul>
+  </section>
+
+  <!-- ================= ČLANARINE ================= -->
+  <section id="clanarine" class="ekran">
+    <div class="red-datum">
+      <button class="dugme malo" id="mesecNazad" aria-label="Prethodni mesec">‹</button>
+      <div class="mesec" id="mesecNaziv"></div>
+      <button class="dugme malo" id="mesecNapred" aria-label="Sledeći mesec">›</button>
+    </div>
+    <label class="iznos-red">Iznos članarine (din)
+      <input type="number" inputmode="numeric" id="iznosClanarine" min="0" step="100">
+    </label>
+    <p class="info" id="clanarineInfo"></p>
+    <ul id="listaClanarina" class="lista cekiranje"></ul>
+  </section>
+
+  <!-- ================= KOPIJA ================= -->
   <section id="kopija" class="ekran">
     <div class="kartica">
       <h2>Rezervna kopija</h2>
@@ -78,7 +177,7 @@
     <div class="kartica">
       <h2>O aplikaciji</h2>
       <p class="info" id="statistika"></p>
-      <p class="info">Verzija 1.0 · radi bez interneta</p>
+      <p class="info">Verzija 2.0 · radi bez interneta</p>
     </div>
   </section>
 </main>
@@ -86,52 +185,127 @@
 <nav class="dole">
   <button data-ekran="igraci" class="aktivan"><span>👥</span>Igrači</button>
   <button data-ekran="trening"><span>✅</span>Trening</button>
-  <button data-ekran="dolasci"><span>📊</span>Dolasci</button>
-  <button data-ekran="kopija"><span>💾</span>Kopija</button>
+  <button data-ekran="utakmice"><span>🤽</span>Utakmice</button>
+  <button data-ekran="raspored"><span>📅</span>Raspored</button>
+  <button data-ekran="vise"><span>☰</span>Više</button>
 </nav>
 
-<!-- Forma za igrača -->
+<!-- ============ DIJALOZI ============ -->
 <dialog id="dlgIgrac">
   <form method="dialog" id="formaIgrac">
     <h2 id="dlgNaslov">Novi igrač</h2>
-    <label>Ime i prezime
-      <input name="ime" required autocomplete="off">
-    </label>
+    <label>Ime i prezime <input name="ime" required autocomplete="off"></label>
     <div class="dva">
-      <label>Godište
-        <input name="godiste" type="number" inputmode="numeric" min="1950" max="2030">
-      </label>
-      <label>Kapa (broj)
-        <input name="kapa" type="number" inputmode="numeric" min="1" max="99">
-      </label>
+      <label>Godište <input name="godiste" type="number" inputmode="numeric" min="1950" max="2030"></label>
+      <label>Kapa (broj) <input name="kapa" type="number" inputmode="numeric" min="1" max="99"></label>
     </div>
     <label>Pozicija
       <select name="pozicija">
-        <option value="">—</option>
-        <option>Golman</option>
-        <option>Centar</option>
-        <option>Bek</option>
-        <option>Krilo</option>
-        <option>Spoljni</option>
+        <option value="">—</option><option>Golman</option><option>Centar</option><option>Bek</option><option>Krilo</option><option>Spoljni</option>
       </select>
     </label>
-    <label>Telefon (igrač ili roditelj)
-      <input name="telefon" type="tel" autocomplete="off">
-    </label>
-    <label>Napomena
-      <input name="napomena" autocomplete="off">
-    </label>
+    <label>Telefon (igrač ili roditelj) <input name="telefon" type="tel" autocomplete="off"></label>
+    <label>Napomena <input name="napomena" autocomplete="off"></label>
     <div class="red-dugmad">
       <button type="button" class="dugme opasno" id="obrisiIgraca">Obriši</button>
       <span class="razmak"></span>
-      <button type="button" class="dugme" id="odustani">Odustani</button>
+      <button type="button" class="dugme" data-zatvori>Odustani</button>
       <button type="submit" class="dugme glavno">Sačuvaj</button>
     </div>
   </form>
 </dialog>
 
+<dialog id="dlgUtakmica">
+  <form method="dialog" id="formaUtakmica">
+    <h2 id="dlgUtakmicaNaslov">Nova utakmica</h2>
+    <label>Protivnik <input name="protivnik" required autocomplete="off"></label>
+    <div class="dva">
+      <label>Datum <input name="datum" type="date" required></label>
+      <label>Vreme <input name="vreme" type="time"></label>
+    </div>
+    <label>Bazen / mesto <input name="mesto" autocomplete="off"></label>
+    <label>Takmičenje <input name="takmicenje" autocomplete="off" placeholder="npr. liga, kup, prijateljska"></label>
+    <div class="sastav-zaglavlje"><span>Sastav</span><span id="sastavBroj"></span></div>
+    <ul id="sastavLista" class="lista cekiranje mala"></ul>
+    <div class="red-dugmad">
+      <span class="razmak"></span>
+      <button type="button" class="dugme" data-zatvori>Odustani</button>
+      <button type="submit" class="dugme glavno">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgAkcija" class="list-dno">
+  <h2 id="akcijaNaslov"></h2>
+  <p class="info" id="akcijaInfo"></p>
+  <div class="akcije" id="akcijeDugmad"></div>
+  <button class="dugme siroko" data-zatvori>Odustani</button>
+</dialog>
+
+<dialog id="dlgZapisnik">
+  <h2 id="zapisnikNaslov">Zapisnik</h2>
+  <div id="zapisnikSadrzaj" class="zapisnik"></div>
+  <div class="red-dugmad">
+    <button class="dugme glavno" id="podeliZapisnik">Podeli</button>
+    <span class="razmak"></span>
+    <button class="dugme" data-zatvori>Zatvori</button>
+  </div>
+</dialog>
+
+<dialog id="dlgDogadjaj">
+  <form method="dialog" id="formaDogadjaj">
+    <h2 id="dlgDogadjajNaslov">Novi događaj</h2>
+    <label>Vrsta
+      <select name="tip"><option>Trening</option><option>Utakmica</option><option>Turnir</option><option>Ostalo</option></select>
+    </label>
+    <label>Naziv / protivnik <input name="naziv" autocomplete="off" placeholder="nije obavezno"></label>
+    <div class="dva">
+      <label>Datum <input name="datum" type="date" required></label>
+      <label>Vreme <input name="vreme" type="time"></label>
+    </div>
+    <label>Bazen / mesto <input name="mesto" autocomplete="off"></label>
+    <label>Napomena <input name="napomena" autocomplete="off"></label>
+    <label class="cek-red"><input type="checkbox" name="ponavljaj"> Ponavljaj svake nedelje do:
+      <input name="doDatuma" type="date">
+    </label>
+    <div class="red-dugmad">
+      <button type="button" class="dugme opasno" id="obrisiDogadjaj">Obriši</button>
+      <span class="razmak"></span>
+      <button type="button" class="dugme" data-zatvori>Odustani</button>
+      <button type="submit" class="dugme glavno">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgTest">
+  <form method="dialog" id="formaTest">
+    <h2 id="dlgTestNaslov">Unos rezultata</h2>
+    <label>Datum <input name="datum" type="date" required></label>
+    <p class="info" id="testUputstvo"></p>
+    <div id="testUnos" class="test-unos"></div>
+    <div class="red-dugmad">
+      <span class="razmak"></span>
+      <button type="button" class="dugme" data-zatvori>Odustani</button>
+      <button type="submit" class="dugme glavno">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgIstorija">
+  <h2 id="istorijaNaslov"></h2>
+  <ul id="istorijaLista" class="lista mala"></ul>
+  <div class="red-dugmad"><span class="razmak"></span><button class="dugme" data-zatvori>Zatvori</button></div>
+</dialog>
+
 <div id="poruka" class="poruka" role="status"></div>
 
-<script src="app.js"></script>
+<script src="js/osnova.js"></script>
+<script src="js/igraci.js"></script>
+<script src="js/utakmice.js"></script>
+<script src="js/raspored.js"></script>
+<script src="js/taktika.js"></script>
+<script src="js/testovi.js"></script>
+<script src="js/kopija.js"></script>
+<script src="js/start.js"></script>
 </body>
 </html>

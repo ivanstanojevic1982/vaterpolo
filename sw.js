@@ -1,12 +1,19 @@
 // Kad menjaš bilo koji fajl aplikacije, povećaj broj verzije
 // da bi telefon preuzeo novu verziju.
-const VERZIJA = 'vaterpolo-v1';
+const VERZIJA = 'vaterpolo-v2';
 
 const FAJLOVI = [
   './',
   './index.html',
   './style.css',
-  './app.js',
+  './js/osnova.js',
+  './js/igraci.js',
+  './js/utakmice.js',
+  './js/raspored.js',
+  './js/taktika.js',
+  './js/testovi.js',
+  './js/kopija.js',
+  './js/start.js',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -14,7 +21,10 @@ const FAJLOVI = [
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERZIJA).then(c => c.addAll(FAJLOVI)).then(() => self.skipWaiting()));
+  // cache: 'reload' = uzmi sveže fajlove sa servera, ne iz keša pretraživača
+  e.waitUntil(caches.open(VERZIJA)
+    .then(c => c.addAll(FAJLOVI.map(f => new Request(f, { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
