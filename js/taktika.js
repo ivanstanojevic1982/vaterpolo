@@ -109,9 +109,77 @@ function nacrtajTeren() {
     const boja = tk.tim === 'mi' ? (golman ? '#c8372d' : '#0b2e4f') : (golman ? '#c8372d' : '#ffffff');
     const tekstBoja = tk.tim === 'mi' || golman ? '#ffffff' : '#0b2e4f';
     el('circle', { r: 9, fill: boja, stroke: tk.tim === 'mi' ? '#ffffff' : '#0b2e4f', 'stroke-width': 1.5 }, grupa);
-    const t = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 10, 'font-weight': 700, fill: tekstBoja }, grupa);
+    const t = el('text', { class: 'broj', 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 10, 'font-weight': 700, fill: tekstBoja }, grupa);
     t.textContent = tk.broj;
+    if (tk.tim === 'mi') {
+      // Prezime ispod kape (sa tamnom ivicom da se čita na vodi)
+      el('text', { class: 'oznaka', y: 16, 'text-anchor': 'middle', 'font-size': 6.5, 'font-weight': 700, fill: '#ffffff',
+        stroke: '#0b2e4f', 'stroke-width': 2, 'paint-order': 'stroke' }, grupa);
+    }
   }
+}
+
+/* ---------- Naši igrači na kapama ----------
+   sastavTaktike[i] = id igrača na kapi "m(i+1)"; kapa m1 je golman.
+   Čuva se posebno za svaku ekipu. 'brojevi' = samo brojevi 1–7. */
+let sastavTaktike = [];
+let igraciTaktike = new Map();
+
+function podrazumevaniSastav(igraci) {
+  const golmani = igraci.filter(p => p.pozicija === 'Golman');
+  const ostali = igraci.filter(p => p.pozicija !== 'Golman');
+  return [golmani[0], ...ostali, ...golmani.slice(1)].filter(Boolean).slice(0, 7).map(p => p.id);
+}
+
+async function ucitajSastavTaktike() {
+  const igraci = EKIPA ? await igraciEkipe() : [];
+  igraciTaktike = new Map(igraci.map(p => [p.id, p]));
+  const sacuvan = EKIPA ? await uzmiPodesavanje(`taktikaSastav|${EKIPA.id}`, null) : null;
+  if (sacuvan === 'brojevi') sastavTaktike = [];
+  else if (Array.isArray(sacuvan)) sastavTaktike = sacuvan.map(id => (igraciTaktike.has(id) ? id : null));
+  else sastavTaktike = podrazumevaniSastav(igraci);
+}
+
+function oznaciKape() {
+  for (let n = 1; n <= 7; n++) {
+    const g = $(`#tokeni .token[data-id="m${n}"]`);
+    if (!g) continue;
+    const p = igraciTaktike.get(sastavTaktike[n - 1]);
+    const samoBrojevi = !sastavTaktike.length;
+    // Prazna kapa među pravim igračima je bez broja, da se ne pomeša sa nečijom kapom
+    g.querySelector('.broj').textContent = p ? (p.kapa || '–') : samoBrojevi ? n : '';
+    g.querySelector('.oznaka').textContent = p ? prezime(p).slice(0, 10) : '';
+    g.style.opacity = p || samoBrojevi ? '' : '.45';
+  }
+}
+
+async function izaberiSastavTaktike() {
+  const igraci = [...igraciTaktike.values()];
+  if (!igraci.length) return alert('Izabrana ekipa nema igrača. Kape ostaju sa brojevima 1–7.');
+  const opcije = [{ vrednost: '', naziv: '— prazno —' },
+    ...igraci.map(p => ({ vrednost: p.id, naziv: `${p.kapa ? p.kapa + ' – ' : ''}${p.ime}` }))];
+  const polja = Array.from({ length: 7 }, (_, i) => ({
+    ime: 'k' + i, tip: 'select', opcije,
+    label: i === 0 ? 'Kapa 1 – golman (crvena)' : `Kapa ${i + 1}`,
+    vrednost: sastavTaktike[i] || '',
+  }));
+  const r = await pitaj({
+    naslov: `Na tabli – ${EKIPA.naziv}`,
+    opis: 'Ko je na kojoj tamnoj kapi. Protivnik ostaje sa brojevima.',
+    polja, obrisi: 'Samo brojevi 1–7',
+  });
+  if (!r) return;
+  if (r === 'obrisi') {
+    sastavTaktike = [];
+    await sacuvajPodesavanje(`taktikaSastav|${EKIPA.id}`, 'brojevi');
+  } else {
+    const ids = polja.map(p => r[p.ime] || null);
+    const dupli = ids.filter(Boolean).find((id, i, a) => a.indexOf(id) !== i);
+    if (dupli) return alert(`${igraciTaktike.get(dupli).ime} je izabran na dve kape.`);
+    sastavTaktike = ids;
+    await sacuvajPodesavanje(`taktikaSastav|${EKIPA.id}`, ids);
+  }
+  oznaciKape();
 }
 
 function postaviTokene() {
@@ -231,7 +299,7 @@ function prebaciCrtanje() {
   $('#crtajDugme').classList.toggle('ukljuceno', crtanje);
   $('#taktikaUputstvo').textContent = crtanje
     ? 'Crtanje uključeno: povuci prstom strelicu. Ponovo ✏️ za pomeranje kapa.'
-    : 'Prevuci kape prstom. ✏️ uključuje crtanje.';
+    : 'Prevuci kape prstom. 👥 bira igrače, ✏️ uključuje crtanje.';
 }
 
 async function prikaziTaktiku() {
@@ -246,6 +314,8 @@ async function prikaziTaktiku() {
   }
   await popuniIzborPostavki();
   postaviTokene();
+  await ucitajSastavTaktike();   // svaki put, jer je ekipa mogla da se promeni
+  oznaciKape();
 }
 
 function initTaktika() {
@@ -256,6 +326,7 @@ function initTaktika() {
   svg.addEventListener('pointercancel', zavrsi);
   $('#izborPostavke').addEventListener('change', e => ucitajPostavku(e.target.value));
   $('#crtajDugme').addEventListener('click', prebaciCrtanje);
+  $('#sastavDugme').addEventListener('click', izaberiSastavTaktike);
   $('#brisiCrtez').addEventListener('click', () => { crtez = []; postaviTokene(); zapamtiRadno(); });
   $('#sacuvajPostavku').addEventListener('click', sacuvajPostavku);
   $('#obrisiPostavku').addEventListener('click', obrisiPostavku);

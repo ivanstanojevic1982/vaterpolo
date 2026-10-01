@@ -5,16 +5,18 @@
 
 /* ---------- Baza (IndexedDB) ---------- */
 const DB_IME = 'vaterpolo';
-const DB_VERZIJA = 2;
+const DB_VERZIJA = 3;
 // Sve tabele (store) i njihovi ključevi
 const TABELE = {
+  klubovi: 'id',
+  ekipe: 'id',
   igraci: 'id',
-  treninzi: 'datum',
+  treninzi: 'kljuc',     // "ekipaId|datum"
   utakmice: 'id',
   raspored: 'id',
   taktike: 'id',
   testovi: 'id',
-  clanarine: 'kljuc',
+  clanarine: 'kljuc',    // "igracId|mesec"
   meta: 'kljuc',
 };
 let db;
@@ -22,8 +24,18 @@ let db;
 function otvoriBazu() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_IME, DB_VERZIJA);
-    req.onupgradeneeded = () => {
+    req.onupgradeneeded = e => {
       const d = req.result;
+      // v1/v2 -> v3: treninzi dobijaju ključ "ekipaId|datum".
+      // Ekipa se dodeljuje kasnije u popraviPodatke().
+      if (e.oldVersion > 0 && e.oldVersion < 3 && d.objectStoreNames.contains('treninzi')) {
+        req.transaction.objectStore('treninzi').getAll().onsuccess = ev => {
+          const stari = ev.target.result;
+          d.deleteObjectStore('treninzi');
+          const novi = d.createObjectStore('treninzi', { keyPath: 'kljuc' });
+          stari.forEach(t => novi.put({ ...t, ekipaId: null, kljuc: 'bez|' + t.datum }));
+        };
+      }
       for (const [ime, kljuc] of Object.entries(TABELE)) {
         if (!d.objectStoreNames.contains(ime)) d.createObjectStore(ime, { keyPath: kljuc });
       }
@@ -147,3 +159,188 @@ function idiNa(ekran) {
 }
 
 function postaviNaslov(tekst) { $('#naslov').textContent = tekst; }
+
+/* =========================================================
+   KLUBOVI I EKIPE
+   ========================================================= */
+let EKIPA = null;          // izabrana ekipa { id, klubId, naziv }
+let KLUB = null;           // klub izabrane ekipe { id, naziv, boja }
+let sviKlubovi = [], sveEkipe = [];
+
+const BOJE_KLUBOVA = ['#0b2e4f', '#c8372d', '#1f9d55', '#b8860b', '#6a3fb5', '#0e7c86', '#d2691e'];
+
+async function ucitajKluboveIEkipe() {
+  sviKlubovi = (await sve('klubovi')).sort((a, b) => (a.redosled ?? 0) - (b.redosled ?? 0) || a.naziv.localeCompare(b.naziv, 'sr'));
+  sveEkipe = (await sve('ekipe')).sort((a, b) => (a.redosled ?? 0) - (b.redosled ?? 0) || a.naziv.localeCompare(b.naziv, 'sr'));
+  const aktivna = await uzmiPodesavanje('aktivnaEkipa', null);
+  EKIPA = sveEkipe.find(e => e.id === aktivna) || sveEkipe[0] || null;
+  KLUB = EKIPA ? sviKlubovi.find(k => k.id === EKIPA.klubId) : null;
+  osveziIzborEkipe();
+}
+
+const klubEkipe = e => sviKlubovi.find(k => k.id === e?.klubId);
+const nazivEkipe = (e, kratko) => {
+  if (!e) return 'Opšte';
+  const k = klubEkipe(e);
+  return kratko || !k ? e.naziv : `${k.naziv} · ${e.naziv}`;
+};
+const bojaEkipe = e => klubEkipe(e)?.boja || '#6b7d8f';
+
+async function izaberiEkipu(id) {
+  await sacuvajPodesavanje('aktivnaEkipa', id);
+  await ucitajKluboveIEkipe();
+  utakmica = null;   // otvorena utakmica pripada staroj ekipi
+  const glavni = ['igraci', 'trening', 'utakmice', 'raspored', 'vise'];
+  const e = EKRANI[trenutniEkran];
+  idiNa(trenutniEkran === 'utakmica' ? 'utakmice' : glavni.includes(trenutniEkran) || e?.roditelj ? trenutniEkran : 'igraci');
+  poruka(`Ekipa: ${nazivEkipe(EKIPA)}`);
+}
+
+// Igrači izabrane ekipe
+async function igraciEkipe(ekipaId = EKIPA?.id) {
+  return sortirajIgrace((await sve('igraci')).filter(p => (p.ekipe || []).includes(ekipaId)));
+}
+
+const kljucTreninga = (datum, ekipaId = EKIPA?.id) => `${ekipaId}|${datum}`;
+async function treninziEkipe(ekipaId = EKIPA?.id) {
+  return (await sve('treninzi')).filter(t => t.ekipaId === ekipaId);
+}
+
+function osveziIzborEkipe() {
+  const dugme = $('#izborEkipe');
+  if (!dugme) return;
+  dugme.innerHTML = EKIPA
+    ? `<i style="background:${esc(bojaEkipe(EKIPA))}"></i>${esc(nazivEkipe(EKIPA))} ▾`
+    : 'Izaberi ekipu ▾';
+}
+
+function otvoriIzborEkipe() {
+  $('#listaEkipaIzbor').innerHTML = sviKlubovi.map(k => {
+    const ekipe = sveEkipe.filter(e => e.klubId === k.id);
+    return `<li class="klub-naslov"><i style="background:${esc(k.boja)}"></i>${esc(k.naziv)}</li>` +
+      (ekipe.map(e => `<li data-id="${esc(e.id)}" class="${e.id === EKIPA?.id ? 'tu' : ''}">
+        <div class="detalji"><div class="ime">${esc(e.naziv)}</div></div>
+        <div class="kvacica">${e.id === EKIPA?.id ? '✓' : ''}</div></li>`).join('') ||
+        '<li class="bledo"><div class="detalji opis">nema ekipa</div></li>');
+  }).join('');
+  $('#dlgEkipe').showModal();
+}
+
+/* Prevodi stare podatke (v1/v2, ili stara kopija) u oblik sa ekipama.
+   Sve što nema ekipu ide u prvu ekipu. */
+async function popraviPodatke() {
+  let ekipe = await sve('ekipe');
+  if (!ekipe.length) {
+    let klub = (await sve('klubovi'))[0];
+    if (!klub) { klub = { id: noviId(), naziv: 'Moj klub', boja: BOJE_KLUBOVA[0], redosled: 0 }; await sacuvaj('klubovi', klub); }
+    await sacuvaj('ekipe', { id: noviId(), klubId: klub.id, naziv: 'Prva ekipa', redosled: 0 });
+    ekipe = await sve('ekipe');
+  }
+  const prva = ekipe.sort((a, b) => (a.redosled ?? 0) - (b.redosled ?? 0))[0].id;
+
+  for (const p of await sve('igraci')) {
+    if (!Array.isArray(p.ekipe)) { p.ekipe = [prva]; await sacuvaj('igraci', p); }
+  }
+  for (const t of await sve('treninzi')) {
+    if (!t.ekipaId) {
+      await obrisi('treninzi', t.kljuc);
+      await sacuvaj('treninzi', { ...t, ekipaId: prva, kljuc: `${prva}|${t.datum}` });
+    }
+  }
+  for (const u of await sve('utakmice')) {
+    if (!u.ekipaId) { u.ekipaId = prva; await sacuvaj('utakmice', u); }
+  }
+  for (const r of await sve('raspored')) {
+    if (!('ekipaId' in r)) { r.ekipaId = prva; await sacuvaj('raspored', r); }
+  }
+  const staraClanarina = await uzmi('meta', 'clanarinaIznos');
+  if (staraClanarina) {
+    await sacuvajPodesavanje(`clanarinaIznos|${prva}`, staraClanarina.vrednost);
+    await obrisi('meta', 'clanarinaIznos');
+  }
+}
+
+/* =========================================================
+   PODEŠAVANJA (liste koje trener sam menja)
+   ========================================================= */
+const PODRAZUMEVANO = {
+  pozicije: ['Golman', 'Centar', 'Bek', 'Krilo', 'Spoljni'],
+  vrsteTestova: [
+    { id: '50sl',   naziv: '50 m slobodno',  jed: 'vreme', smer: 'manje' },
+    { id: '100sl',  naziv: '100 m slobodno', jed: 'vreme', smer: 'manje' },
+    { id: '200sl',  naziv: '200 m slobodno', jed: 'vreme', smer: 'manje' },
+    { id: '400sl',  naziv: '400 m slobodno', jed: 'vreme', smer: 'manje' },
+    { id: '25lop',  naziv: '25 m sa loptom', jed: 'vreme', smer: 'manje' },
+    { id: 'visina', naziv: 'Visina',         jed: 'cm',    smer: 'vise' },
+    { id: 'tezina', naziv: 'Težina',         jed: 'kg',    smer: 'nema' },
+  ],
+  tipoviDogadjaja: [
+    { naziv: 'Trening',  boja: '#0b2e4f' },
+    { naziv: 'Utakmica', boja: '#c8372d' },
+    { naziv: 'Turnir',   boja: '#b8860b' },
+    { naziv: 'Ostalo',   boja: '#6b7d8f' },
+  ],
+  maxFaulova: 3,
+  skriveneAkcije: [],
+};
+const PODESAVANJA = structuredClone(PODRAZUMEVANO);
+
+async function ucitajPodesavanja() {
+  for (const k of Object.keys(PODRAZUMEVANO)) {
+    PODESAVANJA[k] = await uzmiPodesavanje('p:' + k, structuredClone(PODRAZUMEVANO[k]));
+  }
+}
+async function sacuvajListu(k, vrednost) {
+  PODESAVANJA[k] = vrednost;
+  await sacuvajPodesavanje('p:' + k, vrednost);
+}
+
+/* ---------- Opšti dijalog za unos ----------
+   pitaj({ naslov, polja: [{ ime, label, tip, vrednost, opcije }], obrisi: 'tekst dugmeta' })
+   vraća objekat sa vrednostima, 'obrisi' ili null (odustao) */
+function pitaj({ naslov, polja, obrisi: tekstObrisi, opis }) {
+  return new Promise(resolve => {
+    const dlg = $('#dlgPitaj');
+    $('#pitajNaslov').textContent = naslov;
+    $('#pitajOpis').textContent = opis || '';
+    $('#pitajOpis').hidden = !opis;
+    $('#pitajPolja').innerHTML = polja.map(p => {
+      const v = esc(p.vrednost ?? '');
+      if (p.tip === 'select') {
+        return `<label>${esc(p.label)}<select name="${p.ime}">${p.opcije.map(o =>
+          `<option value="${esc(o.vrednost)}" ${String(o.vrednost) === String(p.vrednost) ? 'selected' : ''}>${esc(o.naziv)}</option>`).join('')}</select></label>`;
+      }
+      if (p.tip === 'color') {
+        return `<label>${esc(p.label)}<div class="boje">${BOJE_KLUBOVA.map(b =>
+          `<button type="button" class="boja ${b === p.vrednost ? 'izabrana' : ''}" data-boja="${b}" style="background:${b}"></button>`).join('')}
+          <input type="color" name="${p.ime}" value="${v || BOJE_KLUBOVA[0]}"></div></label>`;
+      }
+      return `<label>${esc(p.label)}<input name="${p.ime}" type="${p.tip || 'text'}" value="${v}" ${p.obavezno ? 'required' : ''} autocomplete="off" ${p.tip === 'number' ? 'inputmode="numeric"' : ''}></label>`;
+    }).join('');
+    $('#pitajObrisi').hidden = !tekstObrisi;
+    $('#pitajObrisi').textContent = tekstObrisi || '';
+
+    const forma = $('#formaPitaj');
+    const zavrsi = rez => {
+      forma.onsubmit = null; $('#pitajObrisi').onclick = null; $('#pitajOdustani').onclick = null; dlg.onclose = null;
+      dlg.close(); resolve(rez);
+    };
+    forma.onsubmit = e => {
+      e.preventDefault();
+      const rez = {};
+      for (const p of polja) rez[p.ime] = forma.elements[p.ime].value.trim?.() ?? forma.elements[p.ime].value;
+      if (polja.some(p => p.obavezno && !rez[p.ime])) return;
+      zavrsi(rez);
+    };
+    $('#pitajObrisi').onclick = () => zavrsi('obrisi');
+    $('#pitajOdustani').onclick = () => zavrsi(null);
+    dlg.onclose = () => resolve(null);
+    $('#pitajPolja').onclick = e => {
+      const b = e.target.closest('.boja'); if (!b) return;
+      $$('#pitajPolja .boja').forEach(x => x.classList.toggle('izabrana', x === b));
+      b.parentElement.querySelector('input[type=color]').value = b.dataset.boja;
+    };
+    dlg.showModal();
+    setTimeout(() => forma.querySelector('input:not([type=color])')?.focus(), 50);
+  });
+}

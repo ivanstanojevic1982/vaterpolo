@@ -4,15 +4,27 @@
    ========================================================= */
 EKRANI.raspored = { naslov: 'Raspored', prikazi: prikaziRaspored };
 
-const TIP_KLASA = { Trening: 'tip-trening', Utakmica: 'tip-utakmica', Turnir: 'tip-turnir', Ostalo: 'tip-ostalo' };
 let izmenaDogadjajaId = null;
+let filterRasporeda = 'sve';
+const bojaTipa = tip => PODESAVANJA.tipoviDogadjaja.find(t => t.naziv === tip)?.boja || '#6b7d8f';
+
+function opcijeEkipa(izabrana, saOpstim) {
+  return (saOpstim ? `<option value="" ${izabrana === '' ? 'selected' : ''}>Opšte (sve ekipe)</option>` : '') +
+    sviKlubovi.map(k => {
+      const ekipe = sveEkipe.filter(e => e.klubId === k.id);
+      return ekipe.length ? `<optgroup label="${esc(k.naziv)}">${ekipe.map(e =>
+        `<option value="${esc(e.id)}" ${e.id === izabrana ? 'selected' : ''}>${esc(e.naziv)}</option>`).join('')}</optgroup>` : '';
+    }).join('');
+}
 
 function stavkaRasporeda(d, danas) {
   const dt = izISO(d.datum);
   const naslov = d.naziv ? `${d.tip}: ${d.naziv}` : d.tip;
   const opis = [d.vreme, d.mesto].filter(Boolean).join(' · ');
+  const ekipa = sveEkipe.find(e => e.id === d.ekipaId);
+  const cip = `<span class="cip-ekipa" style="--b:${esc(ekipa ? bojaEkipe(ekipa) : '#6b7d8f')}">${esc(ekipa ? nazivEkipe(ekipa) : 'Opšte')}</span>`;
   return `<li data-id="${esc(d.id)}" class="${d.datum === danas ? 'danas' : ''}">
-    <div class="datum-znak ${TIP_KLASA[d.tip] || 'tip-ostalo'}">
+    <div class="datum-znak" style="background:${esc(bojaTipa(d.tip))}">
       <span class="dz-dan">${DANI_KRATKO[dt.getDay()]}</span>
       <span class="dz-broj">${dt.getDate()}</span>
       <span class="dz-mesec">${MESECI_KRATKO[dt.getMonth()]}</span>
@@ -20,6 +32,7 @@ function stavkaRasporeda(d, danas) {
     <div class="detalji">
       <div class="ime">${esc(naslov)}${d.datum === danas ? ' <span class="znacka">danas</span>' : ''}</div>
       ${opis ? `<div class="opis">${esc(opis)}</div>` : ''}
+      ${sveEkipe.length > 1 ? cip : ''}
       ${d.napomena ? `<div class="opis">${esc(d.napomena)}</div>` : ''}
     </div>
     <div class="desno">›</div>
@@ -28,7 +41,12 @@ function stavkaRasporeda(d, danas) {
 
 async function prikaziRaspored() {
   const danas = danasISO();
-  const svi = (await sve('raspored')).sort((a, b) => (a.datum + (a.vreme || '')).localeCompare(b.datum + (b.vreme || '')));
+  $('#filterRasporeda').innerHTML = `<option value="sve">Sve ekipe</option>` + opcijeEkipa(filterRasporeda, false);
+  $('#filterRasporeda').value = filterRasporeda;
+  $('#filterRasporeda').closest('label').hidden = sveEkipe.length < 2;
+  const svi = (await sve('raspored'))
+    .filter(d => filterRasporeda === 'sve' || d.ekipaId === filterRasporeda || !d.ekipaId)
+    .sort((a, b) => (a.datum + (a.vreme || '')).localeCompare(b.datum + (b.vreme || '')));
   const predstoji = svi.filter(d => d.datum >= danas);
   const proslo = svi.filter(d => d.datum < danas).reverse().slice(0, 20);
 
@@ -67,6 +85,10 @@ async function otvoriFormuDogadjaja(id) {
   $('#dlgDogadjajNaslov').textContent = d ? 'Izmeni događaj' : 'Novi događaj';
   $('#obrisiDogadjaj').hidden = !d;
   forma.elements.datum.value = d?.datum || danasISO();
+  const tipovi = PODESAVANJA.tipoviDogadjaja.map(t => t.naziv);
+  if (d?.tip && !tipovi.includes(d.tip)) tipovi.push(d.tip);
+  forma.elements.tip.innerHTML = tipovi.map(t => `<option>${esc(t)}</option>`).join('');
+  forma.elements.ekipaId.innerHTML = opcijeEkipa(d ? (d.ekipaId || '') : (filterRasporeda !== 'sve' ? filterRasporeda : EKIPA.id), true);
   if (d) for (const polje of ['tip', 'naziv', 'vreme', 'mesto', 'napomena']) forma.elements[polje].value = d[polje] || '';
   // Ponavljanje samo pri dodavanju
   forma.querySelector('.cek-red').hidden = !!d;
@@ -78,6 +100,7 @@ async function sacuvajDogadjaj(e) {
   const f = $('#formaDogadjaj').elements;
   const osnova = {
     tip: f.tip.value,
+    ekipaId: f.ekipaId.value,
     naziv: f.naziv.value.trim(),
     datum: f.datum.value,
     vreme: f.vreme.value,
@@ -126,6 +149,7 @@ function initRaspored() {
   $('#noviDogadjaj').addEventListener('click', () => otvoriFormuDogadjaja());
   $('#rasporedSadrzaj').addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) otvoriFormuDogadjaja(li.dataset.id); });
   $('#formaDogadjaj').addEventListener('submit', sacuvajDogadjaj);
+  $('#filterRasporeda').addEventListener('change', e => { filterRasporeda = e.target.value; prikaziRaspored(); });
   $('#obrisiDogadjaj').addEventListener('click', obrisiDogadjaj);
   $('#formaDogadjaj').elements.ponavljaj.addEventListener('change', e => {
     const f = $('#formaDogadjaj').elements;

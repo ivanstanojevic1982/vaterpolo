@@ -10,6 +10,10 @@ async function start() {
     return;
   }
 
+  await popraviPodatke();       // stari podaci -> prva ekipa
+  await ucitajPodesavanja();
+  await ucitajKluboveIEkipe();
+
   // Zamoli pretraživač da ne briše podatke
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
 
@@ -23,6 +27,7 @@ async function start() {
   initRaspored();
   initTaktika();
   initTestovi();
+  initPodesavanja();
   initKopija();
 
   idiNa('igraci');

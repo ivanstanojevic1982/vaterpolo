@@ -6,18 +6,14 @@
 /* ---------- Testovi ---------- */
 EKRANI.testovi = { naslov: 'Testovi', roditelj: 'vise', prikazi: prikaziTestove };
 
-// manjeBolje: true = manje je bolje (vreme), false = više je bolje, null = bez ocene
-const VRSTE_TESTOVA = [
-  { id: '50sl',   naziv: '50 m slobodno',   jed: 'vreme', manjeBolje: true },
-  { id: '100sl',  naziv: '100 m slobodno',  jed: 'vreme', manjeBolje: true },
-  { id: '200sl',  naziv: '200 m slobodno',  jed: 'vreme', manjeBolje: true },
-  { id: '400sl',  naziv: '400 m slobodno',  jed: 'vreme', manjeBolje: true },
-  { id: '25lop',  naziv: '25 m sa loptom',  jed: 'vreme', manjeBolje: true },
-  { id: 'visina', naziv: 'Visina',          jed: 'cm',    manjeBolje: false },
-  { id: 'tezina', naziv: 'Težina',          jed: 'kg',    manjeBolje: null },
-];
-let izabraniTest = '50sl';
-const vrstaTesta = id => VRSTE_TESTOVA.find(v => v.id === id);
+// Vrste testova se menjaju u Podešavanjima.
+// smer: 'manje' = manje je bolje (vreme), 'vise' = više je bolje, 'nema' = bez ocene
+let izabraniTest = null;
+function vrstaTesta(id) {
+  const v = PODESAVANJA.vrsteTestova.find(x => x.id === id);
+  if (!v) return null;
+  return { ...v, manjeBolje: v.smer === 'manje' ? true : v.smer === 'vise' ? false : null };
+}
 
 // "32,5" -> 32.5 ; "1:05,3" -> 65.3
 function procitajVrednost(tekst, jed) {
@@ -55,11 +51,20 @@ function promenaHTML(nova, stara, vrsta) {
 }
 
 async function prikaziTestove() {
-  $('#vrstaTesta').innerHTML = VRSTE_TESTOVA.map(v => `<option value="${v.id}">${esc(v.naziv)}</option>`).join('');
+  const vrste = PODESAVANJA.vrsteTestova;
+  if (!vrste.length) {
+    $('#vrstaTesta').innerHTML = '';
+    $('#testInfo').textContent = 'Nema vrsta testova. Dodaj ih u Više → Podešavanja.';
+    $('#listaTestova').innerHTML = '';
+    $('#unesiTest').hidden = true;
+    return;
+  }
+  $('#unesiTest').hidden = false;
+  if (!vrstaTesta(izabraniTest)) izabraniTest = vrste[0].id;
+  $('#vrstaTesta').innerHTML = vrste.map(v => `<option value="${esc(v.id)}">${esc(v.naziv)}</option>`).join('');
   $('#vrstaTesta').value = izabraniTest;
   const vrsta = vrstaTesta(izabraniTest);
-  const [igraci, svi] = await Promise.all([sve('igraci'), sve('testovi')]);
-  sortirajIgrace(igraci);
+  const [igraci, svi] = await Promise.all([igraciEkipe(), sve('testovi')]);
   const rezultati = svi.filter(t => t.vrsta === izabraniTest);
 
   const redovi = igraci.map(p => {
@@ -102,8 +107,8 @@ async function prikaziTestove() {
 
 async function otvoriUnosTesta() {
   const vrsta = vrstaTesta(izabraniTest);
-  const igraci = sortirajIgrace(await sve('igraci'));
-  if (!igraci.length) return alert('Prvo dodaj igrače.');
+  const igraci = await igraciEkipe();
+  if (!igraci.length) return alert('Prvo dodaj igrače u ovu ekipu.');
   const forma = $('#formaTest');
   forma.reset();
   forma.elements.datum.value = danasISO();
@@ -175,9 +180,8 @@ function nazivMeseca(m) {
 
 async function prikaziClanarine() {
   $('#mesecNaziv').textContent = nazivMeseca(izabraniMesec);
-  $('#iznosClanarine').value = await uzmiPodesavanje('clanarinaIznos', '') || '';
-  const [igraci, uplate] = await Promise.all([sve('igraci'), sve('clanarine')]);
-  sortirajIgrace(igraci);
+  $('#iznosClanarine').value = await uzmiPodesavanje(`clanarinaIznos|${EKIPA.id}`, '') || '';
+  const [igraci, uplate] = await Promise.all([igraciEkipe(), sve('clanarine')]);
   const ovogMeseca = new Map(uplate.filter(u => u.mesec === izabraniMesec).map(u => [u.igracId, u]));
   const zbir = [...ovogMeseca.values()].reduce((s, u) => s + (Number(u.iznos) || 0), 0);
 
@@ -222,7 +226,7 @@ async function prebaciUplatu(igracId) {
     if (!confirm('Poništiti uplatu za ovaj mesec?')) return;
     await obrisi('clanarine', kljuc);
   } else {
-    const iznos = await uzmiPodesavanje('clanarinaIznos', '');
+    const iznos = await uzmiPodesavanje(`clanarinaIznos|${EKIPA.id}`, '');
     await sacuvaj('clanarine', { kljuc, igracId, mesec: izabraniMesec, iznos: iznos ? Number(iznos) : null, datum: danasISO() });
   }
   prikaziClanarine();
@@ -243,6 +247,6 @@ function initTestovi() {
 
   $('#mesecNazad').addEventListener('click', () => { izabraniMesec = pomeriMesec(izabraniMesec, -1); prikaziClanarine(); });
   $('#mesecNapred').addEventListener('click', () => { izabraniMesec = pomeriMesec(izabraniMesec, 1); prikaziClanarine(); });
-  $('#iznosClanarine').addEventListener('change', async e => { await sacuvajPodesavanje('clanarinaIznos', e.target.value); poruka('Iznos sačuvan'); });
+  $('#iznosClanarine').addEventListener('change', async e => { await sacuvajPodesavanje(`clanarinaIznos|${EKIPA.id}`, e.target.value); poruka('Iznos sačuvan'); });
   $('#listaClanarina').addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) prebaciUplatu(li.dataset.id); });
 }

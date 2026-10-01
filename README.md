@@ -1,6 +1,6 @@
 # Vaterpolo trener
 
-Offline veb aplikacija (PWA) za vaterpolo trenera: igrači, evidencija treninga i dolazaka, statistika utakmica uživo sa zapisnikom, raspored, tabla za taktiku, testovi napretka, članarine i rezervna kopija.
+Offline veb aplikacija (PWA) za vaterpolo trenera koji radi u više klubova i ekipa: igrači, evidencija treninga i dolazaka, statistika utakmica uživo sa zapisnikom, raspored, tabla za taktiku, testovi napretka, članarine i rezervna kopija.
 Svi podaci se čuvaju samo u telefonu.
 
 ## Postavljanje na GitHub Pages
@@ -23,6 +23,7 @@ Posle svake izmene fajlova povećaj `VERZIJA` u `sw.js` (npr. `vaterpolo-v2`), d
 - `js/raspored.js` – raspored
 - `js/taktika.js` – tabla za taktiku
 - `js/testovi.js` – testovi i članarine
+- `js/podesavanja.js` – klubovi, ekipe i liste koje trener sam menja
 - `js/kopija.js` – rezervna kopija, ekran „Više“
 - `js/start.js` – pokretanje
 - `sw.js` – rad bez interneta

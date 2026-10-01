@@ -323,3 +323,58 @@ input.pogresno { border-color: var(--crvena); background: rgba(200,55,45,.08); }
 /* Članarine */
 .mesec { flex: 1; display: grid; place-items: center; font-weight: 700; font-size: 19px; text-transform: capitalize; }
 .iznos-red { margin-top: 12px; }
+
+/* =================== v3: klubovi i ekipe =================== */
+.top { flex-direction: column; align-items: stretch; gap: 6px; padding-bottom: 10px; }
+.top-red { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.izbor-ekipe {
+  align-self: flex-start; max-width: 100%;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 20px;
+  padding: 6px 14px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.izbor-ekipe i { width: 12px; height: 12px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px #fff; }
+
+.klub-naslov {
+  background: none !important; box-shadow: none !important; min-height: 0 !important;
+  padding: 12px 4px 4px !important; font-weight: 700; color: var(--slabo); gap: 8px !important;
+}
+.klub-naslov i, .tacka { width: 14px; height: 14px; border-radius: 50%; flex: none; display: inline-block; }
+.tacka.velika { width: 28px; height: 28px; border-radius: 8px; }
+
+#listaEkipaIzbor li[data-id] { cursor: pointer; }
+#dlgEkipe .red-dugmad { margin-top: 8px; }
+
+/* Raspored: oznaka ekipe */
+.cip-ekipa {
+  display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600;
+  padding: 1px 8px; border-radius: 10px; color: var(--b); border: 1.5px solid var(--b);
+}
+@media (prefers-color-scheme: dark) { .cip-ekipa { color: var(--tekst); } }
+.filter-red { margin: 12px 0 0; }
+
+/* Podešavanja */
+.ugnjezdena li { cursor: pointer; }
+.ugnjezdena .p-klub { margin-top: 10px; }
+.ugnjezdena .p-ekipa { margin-left: 26px; min-height: 48px; padding: 8px 14px; }
+.ugnjezdena .p-dodaj { background: none; box-shadow: none; border: 1.5px dashed var(--linija); color: var(--slabo); }
+.ugnjezdena .p-dodaj .ime { font-weight: 500; color: var(--slabo); font-size: 15px; }
+.kartica .lista { margin-bottom: 12px; }
+#pTestovi li, #pTipovi li { cursor: pointer; }
+.cipovi { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+.cip {
+  border: 1px solid var(--linija); background: var(--bg); color: var(--tekst);
+  border-radius: 18px; padding: 8px 14px; font: inherit; font-size: 15px; cursor: pointer;
+}
+.cip.stalno { opacity: .65; cursor: default; }
+
+.cek-lista { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 4px; }
+.cek { display: flex; align-items: center; gap: 10px; color: var(--tekst); font-size: 16px; margin: 0; padding: 8px 2px; }
+.cek input { width: 22px; height: 22px; min-height: 0; margin: 0; flex: none; }
+.cek-grupa { font-size: 13px; font-weight: 700; color: var(--slabo); margin-top: 8px; text-transform: uppercase; letter-spacing: .03em; }
+
+.boje { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.boja { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
+.boja.izabrana { border-color: var(--akcent); box-shadow: 0 0 0 2px var(--kartica) inset; }
+.boje input[type=color] { width: 44px; height: 36px; padding: 2px; min-height: 0; margin: 0; }

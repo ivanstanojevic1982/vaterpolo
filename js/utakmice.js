@@ -17,7 +17,9 @@ const AKCIJE = {
 };
 const AKCIJE_IGRAC = ['gol', 'promasaj', 'asist', 'izboreno', 'peterac', 'iskljucenje', 'peterac_napr'];
 const AKCIJE_GOLMAN = ['odbrana', 'gol', 'promasaj', 'asist', 'iskljucenje', 'peterac_napr'];
-const MAX_FAULOVA = 3;
+// Broj ličnih grešaka do isključenja i skrivena dugmad dolaze iz Podešavanja
+const maxF = () => Number(PODESAVANJA.maxFaulova) || 3;
+const akcijeIgraca = uGolu => (uGolu ? AKCIJE_GOLMAN : AKCIJE_IGRAC).filter(t => !PODESAVANJA.skriveneAkcije.includes(t));
 
 const nazivPerioda = p => (p >= 5 ? 'P' : `Q${p}`);
 
@@ -37,8 +39,9 @@ function rezultat(u) {
 }
 
 async function prikaziUtakmice() {
-  const lista = (await sve('utakmice')).sort((a, b) => (b.datum + (b.vreme || '')).localeCompare(a.datum + (a.vreme || '')));
+  const lista = (await sve('utakmice')).filter(u => u.ekipaId === EKIPA.id).sort((a, b) => (b.datum + (b.vreme || '')).localeCompare(a.datum + (a.vreme || '')));
   $('#nemaUtakmica').hidden = lista.length > 0;
+  $('#nemaUtakmica').textContent = `Ekipa „${EKIPA.naziv}“ još nema utakmica.`;
   $('#listaUtakmica').innerHTML = lista.map(u => {
     const { mi, oni } = rezultat(u);
     const ishod = !u.dogadjaji.length ? '' : mi > oni ? 'pobeda' : mi < oni ? 'poraz' : 'nereseno';
@@ -65,7 +68,7 @@ async function otvoriFormuUtakmice(id) {
   forma.elements.datum.value = u?.datum || danasISO();
   if (u) for (const polje of ['protivnik', 'vreme', 'mesto', 'takmicenje']) forma.elements[polje].value = u[polje] || '';
 
-  const igraci = sortirajIgrace(await sve('igraci'));
+  const igraci = await igraciEkipe(u?.ekipaId || EKIPA.id);
   const izabrani = new Set(u ? u.sastav : igraci.map(p => p.id));
   $('#sastavLista').innerHTML = igraci.map(p => `
     <li data-id="${esc(p.id)}" class="${izabrani.has(p.id) ? 'tu' : ''}">
@@ -91,7 +94,7 @@ async function sacuvajUtakmicu(e) {
 
   const stara = izmenaUtakmiceId ? await uzmi('utakmice', izmenaUtakmiceId) : null;
   const u = {
-    ...(stara || { id: noviId(), period: 1, dogadjaji: [] }),
+    ...(stara || { id: noviId(), ekipaId: EKIPA.id, period: 1, dogadjaji: [] }),
     protivnik,
     datum: f.datum.value,
     vreme: f.vreme.value,
@@ -137,13 +140,13 @@ async function prikaziUtakmicu() {
 
   $('#mrezaIgraca').innerHTML = sastav.map(p => {
     const f = brojFaulova(p.id);
-    const van = f >= MAX_FAULOVA;
+    const van = f >= maxF();
     const golman = p.id === u.golman;
     const g = broj(p.id, 'gol');
     const stat = golman
       ? `🧤 ${broj(p.id, 'odbrana')}${g ? ` · ⚽ ${g}` : ''}`
       : `⚽ ${g}${broj(p.id, 'asist') ? ` · 🅰 ${broj(p.id, 'asist')}` : ''}`;
-    const tackice = Array.from({ length: MAX_FAULOVA }, (_, i) => `<i class="${i < f ? 'pun' : ''}"></i>`).join('');
+    const tackice = Array.from({ length: maxF() }, (_, i) => `<i class="${i < f ? 'pun' : ''}"></i>`).join('');
     return `<button class="plocica ${van ? 'van' : ''} ${golman ? 'u-golu' : ''}" data-id="${esc(p.id)}">
       <span class="pl-kapa ${p.pozicija === 'Golman' ? 'golman' : ''}">${p.kapa ? esc(p.kapa) : '–'}</span>
       <span class="pl-ime">${esc(prezime(p))}</span>
@@ -189,10 +192,10 @@ async function dodajDogadjaj(t, igrac) {
   if (AKCIJE[t].faul && igrac) {
     const p = igraciMapa.get(igrac);
     const ime = `${p?.kapa ? 'Kapa ' + p.kapa + ' – ' : ''}${prezime(p)}`;
-    if (pre + 1 === MAX_FAULOVA) poruka(`⛔ ${ime}: TREĆA greška — van igre!`, 3500);
-    else if (pre + 1 === MAX_FAULOVA - 1) poruka(`⚠️ ${ime}: druga greška`, 2500);
+    if (pre + 1 === maxF()) poruka(`⛔ ${ime}: ${maxF()}. lična greška — van igre!`, 3500);
+    else if (pre + 1 === maxF() - 1) poruka(`⚠️ ${ime}: još jedna greška do isključenja`, 2500);
     else poruka(`${AKCIJE[t].naziv} — ${ime}`);
-    if (navigator.vibrate) navigator.vibrate(pre + 1 >= MAX_FAULOVA ? [200, 100, 200] : 100);
+    if (navigator.vibrate) navigator.vibrate(pre + 1 >= maxF() ? [200, 100, 200] : 100);
   } else {
     poruka(`${AKCIJE[t].ikona} ${AKCIJE[t].naziv}`);
   }
@@ -205,10 +208,10 @@ function otvoriAkcije(igracId) {
   const uGolu = igracId === utakmica.golman;
   const f = brojFaulova(igracId);
   $('#akcijaNaslov').textContent = `${p.kapa ? p.kapa + ' · ' : ''}${p.ime}`;
-  $('#akcijaInfo').textContent = f >= MAX_FAULOVA
+  $('#akcijaInfo').textContent = f >= maxF()
     ? `Van igre (${f} lične greške). Upis je i dalje moguć ako je greška.`
-    : `Lične greške: ${f} od ${MAX_FAULOVA} · ${nazivPerioda(utakmica.period)}`;
-  const lista = uGolu ? AKCIJE_GOLMAN : AKCIJE_IGRAC;
+    : `Lične greške: ${f} od ${maxF()} · ${nazivPerioda(utakmica.period)}`;
+  const lista = akcijeIgraca(uGolu);
   $('#akcijeDugmad').innerHTML = lista.map(t => {
     const a = AKCIJE[t];
     const kl = t === 'gol' ? 'glavno' : a.faul ? 'opasno' : '';
@@ -280,7 +283,7 @@ function prikaziZapisnik() {
   const nula = v => (v ? v : '<span class="nula">0</span>');
   const tabela = `<div class="tabela-omot"><table>
     <thead><tr><th>#</th><th class="levo">Igrač</th><th title="Golovi">G</th><th title="Šutevi">Š</th><th>%</th><th title="Asistencije">A</th><th title="Lične greške">LG</th><th title="Izborena isključenja">II</th><th title="Izboreni peterci">IP</th></tr></thead>
-    <tbody>${z.igraci.map(r => `<tr class="${r.isk >= MAX_FAULOVA ? 'van' : ''}">
+    <tbody>${z.igraci.map(r => `<tr class="${r.isk >= maxF() ? 'van' : ''}">
       <td>${esc(r.p.kapa || '–')}</td><td class="levo">${esc(prezime(r.p))}</td>
       <td><b>${nula(r.g)}</b></td><td>${nula(r.sutevi)}</td><td>${r.pct === null ? '–' : r.pct}</td>
       <td>${nula(r.a)}</td><td>${nula(r.isk)}</td><td>${nula(r.izb)}</td><td>${nula(r.pet)}</td>
@@ -314,8 +317,8 @@ function zapisnikKaoTekst() {
     strelci.forEach(r => linije.push(`  ${r.p.kapa ? r.p.kapa + '. ' : ''}${r.p.ime} – ${r.g} (${r.g}/${r.sutevi})`));
   }
   z.golmani.filter(r => r.odb || r.prim).forEach(r => linije.push(`Golman ${r.p.ime}: ${r.odb} odbrana, ${r.prim} primljenih`));
-  const van = z.igraci.filter(r => r.isk >= MAX_FAULOVA);
-  if (van.length) linije.push(`Van igre (3 LG): ${van.map(r => r.p.ime).join(', ')}`);
+  const van = z.igraci.filter(r => r.isk >= maxF());
+  if (van.length) linije.push(`Van igre (${maxF()} LG): ${van.map(r => r.p.ime).join(', ')}`);
   return linije.join('\n');
 }
 
