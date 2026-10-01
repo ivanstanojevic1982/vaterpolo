@@ -10,9 +10,10 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const SIRINA = 200, VISINA = 320, VRH = 10, DNO = 310;
 
 // Tokeni: m = mi (tamne kape), o = protivnik (bele kape), 1 = golman
+// Redosled = redosled crtanja: protivnik ispod, naši (sa imenima) preko njih, lopta na vrhu
 const TOKENI = [
-  ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ id: 'm' + n, tim: 'mi', broj: n })),
   ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ id: 'o' + n, tim: 'oni', broj: n })),
+  ...[1, 2, 3, 4, 5, 6, 7].map(n => ({ id: 'm' + n, tim: 'mi', broj: n })),
   { id: 'lopta', tim: 'lopta' },
 ];
 
