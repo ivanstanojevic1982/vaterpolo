@@ -111,6 +111,9 @@ const Prepoznavanje = window.SpeechRecognition || window.webkitSpeechRecognition
 const imaDiktiranje = () => !!Prepoznavanje;
 let prepoznavanje = null;
 let diktiram = false;
+// Srpski često nije podržan za diktiranje na iPhoneu, a hrvatski jeste.
+// Ako srpski ne prođe, aplikacija pređe na hrvatski i to zapamti.
+let jezikDiktiranja = 'sr-RS';
 
 function postaviStatus(tekst, greska) {
   const el = $('#belStatus');
@@ -131,7 +134,7 @@ function pokreniDiktiranje() {
   let konacno = '';
 
   prepoznavanje = new Prepoznavanje();
-  prepoznavanje.lang = 'sr-RS';
+  prepoznavanje.lang = jezikDiktiranja;
   prepoznavanje.continuous = true;
   prepoznavanje.interimResults = true;
 
@@ -148,12 +151,19 @@ function pokreniDiktiranje() {
     polje.scrollTop = polje.scrollHeight;
   };
   prepoznavanje.onerror = e => {
+    if (e.error === 'language-not-supported' && jezikDiktiranja === 'sr-RS') {
+      jezikDiktiranja = 'hr-HR';
+      sacuvajPodesavanje('jezikDiktiranja', jezikDiktiranja);
+      postaviStatus('Srpski nije podržan, prelazim na hrvatski…');
+      setTimeout(pokreniDiktiranje, 400);
+      return;
+    }
     const poruke = {
       'not-allowed': 'Mikrofon nije dozvoljen. Dozvoli ga u podešavanjima telefona, ili koristi 🎤 na tastaturi.',
       'service-not-allowed': 'Diktiranje ovde nije dostupno. Dodirni polje, pa 🎤 na tastaturi i govori.',
       'network': 'Za diktiranje treba internet. Bez interneta koristi 🎤 na tastaturi.',
       'no-speech': 'Nisam ništa čuo. Dodirni 🎤 i pokušaj ponovo.',
-      'language-not-supported': 'Srpski nije podržan za diktiranje ovde. Koristi 🎤 na tastaturi.',
+      'language-not-supported': 'Ovaj jezik nije podržan za diktiranje ovde. Koristi 🎤 na tastaturi (hrvatska tastatura).',
     };
     if (e.error !== 'aborted') postaviStatus(poruke[e.error] || 'Diktiranje nije uspelo. Koristi 🎤 na tastaturi.', true);
   };
@@ -181,6 +191,7 @@ function zaustaviDiktiranje() {
 
 /* ---------- Pokretanje ---------- */
 function initBeleske() {
+  uzmiPodesavanje('jezikDiktiranja', 'sr-RS').then(j => { jezikDiktiranja = j; });
   $('#brzaBeleska').addEventListener('click', () => otvoriBelesku());
   $('#novaBeleska').addEventListener('click', () => otvoriBelesku());
   $('#listaBeleski').addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li) otvoriBelesku(li.dataset.id); });

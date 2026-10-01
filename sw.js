@@ -1,6 +1,6 @@
 // Kad menjaš bilo koji fajl aplikacije, povećaj broj verzije
 // da bi telefon preuzeo novu verziju.
-const VERZIJA = 'vaterpolo-v4';
+const VERZIJA = 'vaterpolo-v4.1';
 
 const FAJLOVI = [
   './',
