@@ -7,7 +7,17 @@ EKRANI.vise = { naslov: 'Više', prikazi: prikaziVise };
 
 const TABELE_ZA_KOPIJU = Object.keys(TABELE);
 
+// 1 beleška, 2–4 beleške, 5+ beležaka (11–14 beležaka)
+function brojBeleski(n) {
+  const d = n % 10, s = n % 100;
+  if (d === 1 && s !== 11) return 'beleška';
+  if (d >= 2 && d <= 4 && (s < 12 || s > 14)) return 'beleške';
+  return 'beležaka';
+}
+
 async function prikaziVise() {
+  const brBeleski = (await sve('beleske')).filter(b => b.ekipaId === EKIPA.id).length;
+  $('#viseBeleskeOpis').textContent = brBeleski ? `${brBeleski} ${brojBeleski(brBeleski)} za ovu ekipu` : 'Brze beleške glasom ili kucanjem';
   const poslednja = await uzmiPodesavanje('poslednjaKopija', null);
   const el = $('#viseKopijaOpis');
   if (!poslednja) { el.textContent = 'Kopija još nije napravljena!'; el.classList.add('dug'); return; }

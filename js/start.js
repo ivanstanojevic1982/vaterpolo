@@ -27,6 +27,7 @@ async function start() {
   initRaspored();
   initTaktika();
   initTestovi();
+  initBeleske();
   initPodesavanja();
   initKopija();
 

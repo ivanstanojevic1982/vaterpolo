@@ -139,6 +139,7 @@ async function obrisiEkipuPotpuno(ekipaId) {
     for (const t of testovi) if (t.igracId === p.id) await obrisi('testovi', t.id);
     for (const c of clanarine) if (c.igracId === p.id) await obrisi('clanarine', c.kljuc);
   }
+  for (const b of await sve('beleske')) if (b.ekipaId === ekipaId) await obrisi('beleske', b.id);
   await obrisi('meta', `clanarinaIznos|${ekipaId}`);
   await obrisi('ekipe', ekipaId);
   if (EKIPA?.id === ekipaId) {

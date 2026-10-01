@@ -378,3 +378,49 @@ input.pogresno { border-color: var(--crvena); background: rgba(200,55,45,.08); }
 .boja { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
 .boja.izabrana { border-color: var(--akcent); box-shadow: 0 0 0 2px var(--kartica) inset; }
 .boje input[type=color] { width: 44px; height: 36px; padding: 2px; min-height: 0; margin: 0; }
+
+/* =================== v4: beleške =================== */
+.top-red h1 { flex: 1; min-width: 0; }
+.brza-beleska {
+  flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0;
+  background: rgba(255,255,255,.16); font-size: 20px; cursor: pointer;
+}
+.brza-beleska:active { transform: scale(.94); }
+
+.red-filter { display: flex; gap: 8px; margin-top: 12px; }
+.red-filter input { flex: 1; min-width: 0; }
+.red-filter select { width: auto; flex: none; }
+
+.beleske-lista li { cursor: pointer; align-items: flex-start; }
+.beleska-tekst {
+  white-space: pre-wrap; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.beleske-lista .opis { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.beleske-lista .cip-ekipa { margin-top: 0; }
+.cip-igrac {
+  font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 10px;
+  background: var(--plava); color: #fff;
+}
+
+.beleska-polje { position: relative; }
+#belTekst {
+  width: 100%; min-height: 150px; padding: 12px 64px 12px 12px;
+  font: inherit; color: var(--tekst); background: var(--bg);
+  border: 1px solid var(--linija); border-radius: 12px; resize: vertical;
+}
+.mikrofon {
+  position: absolute; right: 8px; top: 8px;
+  width: 52px; height: 52px; border-radius: 50%; border: 0;
+  background: var(--plava); font-size: 24px; cursor: pointer;
+}
+.mikrofon.snima { background: var(--crvena); animation: puls 1.2s infinite; }
+@keyframes puls {
+  0% { box-shadow: 0 0 0 0 rgba(200,55,45,.55); }
+  70% { box-shadow: 0 0 0 14px rgba(200,55,45,0); }
+  100% { box-shadow: 0 0 0 0 rgba(200,55,45,0); }
+}
+#belStatus { margin: 8px 0 12px; }
+
+/* Skriveni elementi ostaju skriveni i kad im stil (npr. .dugme) zadaje display */
+[hidden] { display: none !important; }

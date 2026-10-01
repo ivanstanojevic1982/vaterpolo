@@ -5,7 +5,7 @@
 
 /* ---------- Baza (IndexedDB) ---------- */
 const DB_IME = 'vaterpolo';
-const DB_VERZIJA = 3;
+const DB_VERZIJA = 4;
 // Sve tabele (store) i njihovi ključevi
 const TABELE = {
   klubovi: 'id',
@@ -17,6 +17,7 @@ const TABELE = {
   taktike: 'id',
   testovi: 'id',
   clanarine: 'kljuc',    // "igracId|mesec"
+  beleske: 'id',
   meta: 'kljuc',
 };
 let db;

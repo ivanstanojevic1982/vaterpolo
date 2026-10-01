@@ -19,6 +19,7 @@
   <div class="top-red">
     <button id="nazad" class="nazad" hidden aria-label="Nazad">‹</button>
     <h1 id="naslov">Igrači</h1>
+    <button id="brzaBeleska" class="brza-beleska" aria-label="Nova beleška" title="Nova beleška">🎤</button>
   </div>
   <button id="izborEkipe" class="izbor-ekipe"></button>
 </header>
@@ -106,6 +107,7 @@
       <li data-idi="taktika"><span class="ikona">🎯</span><div class="detalji"><div class="ime">Tabla za taktiku</div><div class="opis">Postavke i crtanje po bazenu</div></div><div class="desno">›</div></li>
       <li data-idi="testovi"><span class="ikona">⏱️</span><div class="detalji"><div class="ime">Testovi i napredak</div><div class="opis">Plivanje, visina, težina</div></div><div class="desno">›</div></li>
       <li data-idi="clanarine"><span class="ikona">💶</span><div class="detalji"><div class="ime">Članarine</div><div class="opis">Ko je platio koji mesec</div></div><div class="desno">›</div></li>
+      <li data-idi="beleske"><span class="ikona">📝</span><div class="detalji"><div class="ime">Beleške</div><div class="opis" id="viseBeleskeOpis">Brze beleške glasom ili kucanjem</div></div><div class="desno">›</div></li>
       <li data-idi="podesavanja"><span class="ikona">⚙️</span><div class="detalji"><div class="ime">Podešavanja</div><div class="opis">Klubovi, ekipe, pozicije, testovi…</div></div><div class="desno">›</div></li>
       <li data-idi="kopija"><span class="ikona">💾</span><div class="detalji"><div class="ime">Rezervna kopija</div><div class="opis" id="viseKopijaOpis">Sačuvaj podatke van telefona</div></div><div class="desno">›</div></li>
     </ul>
@@ -166,6 +168,20 @@
     </label>
     <p class="info" id="clanarineInfo"></p>
     <ul id="listaClanarina" class="lista cekiranje"></ul>
+  </section>
+
+  <!-- ================= BELEŠKE ================= -->
+  <section id="beleske" class="ekran">
+    <button class="dugme glavno siroko" id="novaBeleska">🎤 Nova beleška</button>
+    <div class="red-filter">
+      <input type="search" id="pretragaBeleski" placeholder="Pretraži beleške…" autocomplete="off">
+      <select id="filterBeleski">
+        <option value="ekipa">Ova ekipa</option>
+        <option value="sve">Sve ekipe</option>
+      </select>
+    </div>
+    <div id="listaBeleski"></div>
+    <p class="prazno" id="nemaBeleski">Još nema beležaka.</p>
   </section>
 
   <!-- ================= PODEŠAVANJA ================= -->
@@ -352,6 +368,26 @@
   </div>
 </dialog>
 
+<dialog id="dlgBeleska">
+  <form id="formaBeleska">
+    <h2 id="belNaslov">Nova beleška</h2>
+    <div class="beleska-polje">
+      <textarea id="belTekst" rows="6" placeholder="Govori ili kucaj…"></textarea>
+      <button type="button" id="belMikrofon" class="mikrofon" aria-label="Diktiraj">🎤</button>
+    </div>
+    <p class="info" id="belStatus">Dodirni 🎤 i govori. Dodirni ponovo da staneš.</p>
+    <label>O igraču (nije obavezno)
+      <select id="belIgrac"></select>
+    </label>
+    <div class="red-dugmad">
+      <button type="button" class="dugme opasno" id="belObrisi">Obriši</button>
+      <span class="razmak"></span>
+      <button type="button" class="dugme" id="belOdustani">Odustani</button>
+      <button type="submit" class="dugme glavno">Sačuvaj</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="dlgPitaj">
   <form id="formaPitaj">
     <h2 id="pitajNaslov"></h2>
@@ -374,6 +410,7 @@
 <script src="js/raspored.js"></script>
 <script src="js/taktika.js"></script>
 <script src="js/testovi.js"></script>
+<script src="js/beleske.js"></script>
 <script src="js/podesavanja.js"></script>
 <script src="js/kopija.js"></script>
 <script src="js/start.js"></script>
